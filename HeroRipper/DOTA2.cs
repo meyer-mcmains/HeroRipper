@@ -26,7 +26,7 @@ namespace HeroRipper
             HtmlWeb web = new HtmlWeb();
             var htmlDoc = web.Load(html);
 
-            var htmlNodes = htmlDoc.DocumentNode.SelectNodes("//tr/td/div/div");
+            var htmlNodes = htmlDoc.DocumentNode.SelectNodes("//tr//td//div//div");
 
             HtmlNodeCollection childNodes = htmlNodes;
 
@@ -56,13 +56,26 @@ namespace HeroRipper
             var html = @"http://dota2.gamepedia.com" + hero;
             HtmlWeb web = new HtmlWeb();
             var htmlDoc = web.Load(html);
-            var htmlNodes = htmlDoc.DocumentNode.SelectNodes("//p//a");
-            HtmlNodeCollection childNodes = htmlNodes;
-            int counter = 0;
 
-            string heroName = hero.Remove(0, 1).Replace('_', ' ');
-            string attackType = null;
-            string mainAttrib = null;
+            Hero h = new Hero()
+            {
+                Name = hero.Remove(0, 1).Replace('_', ' ')
+            };
+
+            RipBasic(form, h, htmlDoc);
+
+            RipRoles(form, h, htmlDoc);
+
+            BuildJSON(h);
+        }
+
+        public void RipBasic(Form1 form, Hero h, HtmlAgilityPack.HtmlDocument doc)
+        {
+            int counter = 0;
+            var htmlNodes = doc.DocumentNode.SelectNodes("//p//a");
+            HtmlNodeCollection childNodes = htmlNodes;
+
+            form.SetOutput("Getting Basic Hero Info for " + h.Name + "\n");
 
             foreach (var node in childNodes)
             {
@@ -73,24 +86,45 @@ namespace HeroRipper
                 }
                 if (counter == 1)
                 {
-                    attackType = node.InnerHtml;
+                    h.AttackRange = node.InnerHtml;
                 }
                 else if (counter == 2)
                 {
-                    mainAttrib = node.InnerHtml;
-                    counter = 0;
+                    h.PrimaryAttribute = node.InnerHtml;
                     break;
                 }
             }
+        }
 
+        public void RipRoles(Form1 form, Hero h, HtmlAgilityPack.HtmlDocument doc)
+        {
+            form.SetOutput("Grabbing Roles of " + h.Name + "\n");
+            var htmlNodes = doc.DocumentNode.SelectNodes("//tr//td//a[@title='Role']");
+            HtmlNodeCollection childNodes = htmlNodes;
+            foreach (var node in childNodes)
+            {
+                if (node.NodeType == HtmlNodeType.Element)
+                {
+                    form.SetOutput(node.InnerHtml + "\n");
+                    h.Roles.Add(node.InnerHtml);
+                }
+            }
+        }
+
+        public void BuildJSON(Hero h)
+        {
             JObject heroJson = new JObject(
-                new JProperty(heroName, attackType, mainAttrib));
+                new JProperty("Name", h.Name),
+                new JProperty("Attack Range", h.AttackRange),
+                new JProperty("Primary Attribute", h.PrimaryAttribute),
+                new JProperty("Roles", h.Roles));
 
-            using (StreamWriter file = File.CreateText(Application.StartupPath + @"\heroes\" + heroName + ".json"))
+
+            using (StreamWriter file = File.CreateText(Application.StartupPath + @"\heroes\" + h.Name + ".json"))
             using (JsonTextWriter writer = new JsonTextWriter(file))
             {
                 heroJson.WriteTo(writer);
             }
-        }
+}
     }
 }
