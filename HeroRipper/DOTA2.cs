@@ -40,6 +40,7 @@ namespace HeroRipper
                     {
                         string key = match.Groups[2].Value;
                         form.SetOutput(key.Remove(0, 1).Replace('_', ' ') + "\n");
+                        WriteHeroList(key.Remove(0, 1).Replace('_', ' '));
                         CrawlPage(key, form);
                         if (key == "/Zeus")
                         {
@@ -56,6 +57,11 @@ namespace HeroRipper
             var html = @"http://dota2.gamepedia.com" + hero;
             HtmlWeb web = new HtmlWeb();
             var htmlDoc = web.Load(html);
+
+            if (hero == "/Nature%27s_Prophet")
+            {
+                hero = "/Nature's_Prophet";
+            }
 
             Hero h = new Hero()
             {
@@ -125,6 +131,19 @@ namespace HeroRipper
             {
                 heroJson.WriteTo(writer);
             }
-}
+        }
+
+        public void WriteHeroList(string name)
+        {
+            if (name == "Nature%27s Prophet")
+            {
+                name = "Nature's Prophet";
+            }
+
+            using (StreamWriter file = new StreamWriter(Application.StartupPath + @"\List\HeroList.txt", true))
+            {
+                file.WriteLine(name);
+            }
+        }
     }
 }
