@@ -22,6 +22,8 @@ namespace HeroRipper
 
         public void GetHeroes(Form1 form)
         {
+            File.Delete(Application.StartupPath + @"\List\HeroList.txt");
+
             var html = @"http://dota2.gamepedia.com/Heroes";
             HtmlWeb web = new HtmlWeb();
             var htmlDoc = web.Load(html);
