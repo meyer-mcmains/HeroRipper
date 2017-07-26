@@ -123,8 +123,8 @@ namespace HeroRipper
         {
             JObject heroJson = new JObject(
                 new JProperty("Name", h.Name),
-                new JProperty("Attack Range", h.AttackRange),
-                new JProperty("Primary Attribute", h.PrimaryAttribute),
+                new JProperty("Attack Range", FirstToUppercase(h.AttackRange)),
+                new JProperty("Primary Attribute", FirstToUppercase(h.PrimaryAttribute)),
                 new JProperty("Roles", h.Roles));
 
 
@@ -146,6 +146,15 @@ namespace HeroRipper
             {
                 file.WriteLine(name);
             }
+        }
+
+        public string FirstToUppercase(string lower)
+        {
+            if (string.IsNullOrEmpty(lower))
+            {
+                return string.Empty;
+            }
+            return char.ToUpper(lower[0]) + lower.Substring(1);
         }
     }
 }
